@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ghcr.io/ev3lynx727/containerd-tiktok-live-invite/backend:latest  # Replace with your repo
+    ports:
+      - "3060:3060"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - tiktok-network
+
+  frontend:
+    image: ghcr.io/ev3lynx727/containerd-tiktok-live-invite/frontend:latest  # Replace with your repo
+    ports:
+      - "3061:80"  # Map container 80 to host 3061
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    networks:
+      - tiktok-network
+
+networks:
+  tiktok-network:
+    driver: bridge

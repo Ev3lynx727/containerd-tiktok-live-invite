@@ -27,7 +27,6 @@ echo "Starting frontend container..."
 docker run -d --name tiktok-frontend \
   --network tiktok-network \
   -p 3061:80 \
-  --depends-on tiktok-backend \
   ghcr.io/ev3lynx727/containerd-tiktok-live-invite/frontend:latest
 
 echo "Deployment complete. Backend: http://localhost:3060, Frontend: http://localhost:3061"

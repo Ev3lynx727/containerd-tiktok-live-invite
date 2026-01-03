@@ -2,16 +2,20 @@ version: '3.8'
 
 services:
   backend:
-    image: ghcr.io/ev3lynx727/containerd-tiktok-live-invite/backend:latest  # Replace with your repo
+    build: ./backend
     ports:
       - "3060:3060"
     environment:
       - NODE_ENV=development
+      - JWT_SECRET=test_jwt_secret
+      - DB_PATH=./database.db
+    volumes:
+      - ./backend/database.db:/app/database.db
     networks:
       - tiktok-network
 
   frontend:
-    image: ghcr.io/ev3lynx727/containerd-tiktok-live-invite/frontend:latest  # Replace with your repo
+    build: ./frontend
     ports:
       - "3061:80"  # Map container 80 to host 3061
     environment:

@@ -27,6 +27,37 @@ router.post('/trigger-invite', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/test-trigger (for testing without auth)
+router.post('/test-trigger', async (req, res) => {
+  try {
+    const { liveUrl, invitees } = req.body;
+    if (!liveUrl || !invitees || !Array.isArray(invitees)) {
+      return res.status(400).json({ error: 'Invalid input' });
+    }
+    for (const invitee of invitees) {
+      if (!invitee.type || !invitee.value || !['username', 'userid'].includes(invitee.type)) {
+        return res.status(400).json({ error: 'Invalid invitee format' });
+      }
+    }
+    const result = await triggerInvite('test_user', liveUrl, invitees);
+    res.json({ status: 'posted', result });
+  } catch (error) {
+    console.error('Test trigger error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/test-invites (for testing without auth)
+router.get('/test-invites', (req, res) => {
+  db.all('SELECT id, userId, liveUrl, invitees, status, createdAt FROM invites ORDER BY createdAt DESC', (err, rows) => {
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ invites: rows });
+  });
+});
+
 // POST /api/webhook/live-start
 router.post('/webhook/live-start', async (req, res) => {
   try {

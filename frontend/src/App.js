@@ -19,15 +19,21 @@ function App() {
 
   const handleInvite = async () => {
     try {
+      const invitees = usernames.split(',').map(u => {
+        const value = u.trim();
+        if (!value) throw new Error('Invalid input: empty value');
+        const type = /^\d+$/.test(value) ? 'userid' : 'username';
+        return { type, value };
+      });
       const response = await axios.post('http://backend:3060/api/trigger-invite', {
         liveUrl,
-        usernames: usernames.split(',').map(u => u.trim())
+        invitees
       }, {
         headers: { Authorization: `Bearer ${jwt}` }
       });
       setMessage('Invite posted successfully!');
     } catch (error) {
-      setMessage('Error: ' + error.response?.data?.error || error.message);
+      setMessage('Error: ' + error.message);
     }
   };
 
@@ -58,7 +64,7 @@ function App() {
           />
           <input
             type="text"
-            placeholder="Usernames (comma-separated)"
+            placeholder="Usernames or Userids (comma-separated)"
             value={usernames}
             onChange={(e) => setUsernames(e.target.value)}
           />
@@ -69,7 +75,7 @@ function App() {
           <ul>
             {invites.map((invite, index) => (
               <li key={index}>
-                {invite.liveUrl} - {invite.status} ({invite.createdAt})
+                {invite.liveUrl} - {JSON.parse(invite.invitees).map(i => `${i.type}:${i.value}`).join(', ')} - {invite.status} ({invite.createdAt})
               </li>
             ))}
           </ul>

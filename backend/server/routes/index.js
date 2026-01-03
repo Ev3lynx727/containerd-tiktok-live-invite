@@ -10,11 +10,16 @@ router.use('/', historyRoutes);
 // POST /api/trigger-invite
 router.post('/trigger-invite', authenticate, async (req, res) => {
   try {
-    const { liveUrl, usernames } = req.body;
-    if (!liveUrl || !usernames || !Array.isArray(usernames)) {
+    const { liveUrl, invitees } = req.body;
+    if (!liveUrl || !invitees || !Array.isArray(invitees)) {
       return res.status(400).json({ error: 'Invalid input' });
     }
-    const result = await triggerInvite(req.user.id, liveUrl, usernames);
+    for (const invitee of invitees) {
+      if (!invitee.type || !invitee.value || !['username', 'userid'].includes(invitee.type)) {
+        return res.status(400).json({ error: 'Invalid invitee format' });
+      }
+    }
+    const result = await triggerInvite(req.user.id, liveUrl, invitees);
     res.json({ status: 'posted', result });
   } catch (error) {
     console.error('Trigger invite error:', error);

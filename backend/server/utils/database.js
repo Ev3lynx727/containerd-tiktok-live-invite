@@ -7,7 +7,7 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     userId TEXT,
     liveUrl TEXT,
-    usernames TEXT,
+    invitees TEXT,
     status TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);

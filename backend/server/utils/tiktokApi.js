@@ -7,8 +7,9 @@ const getAccessToken = async (userId) => {
   return process.env.TIKTOK_ACCESS_TOKEN || 'mock_token';
 };
 
-const triggerInvite = async (userId, liveUrl, usernames, retries = 3) => {
-  const postText = `Join my live: ${liveUrl} @${usernames.join(' @')}`;
+const triggerInvite = async (userId, liveUrl, invitees, retries = 3) => {
+  const tags = invitees.map(i => `@${i.value}`).join(' ');
+  const postText = `Join my live: ${liveUrl} ${tags}`;
   console.log(`Attempting to post: ${postText}`);
 
   const accessToken = await getAccessToken(userId);
@@ -30,8 +31,8 @@ const triggerInvite = async (userId, liveUrl, usernames, retries = 3) => {
     const result = { postId: response.data?.id || 'real_id_' + Date.now(), text: postText };
 
     // Log to DB
-    db.run('INSERT INTO invites (userId, liveUrl, usernames, status) VALUES (?, ?, ?, ?)',
-      [userId, liveUrl, JSON.stringify(usernames), 'success']);
+    db.run('INSERT INTO invites (userId, liveUrl, invitees, status) VALUES (?, ?, ?, ?)',
+      [userId, liveUrl, JSON.stringify(invitees), 'success']);
     return result;
   } catch (error) {
     console.error('API Error:', error.response?.data || error.message);
@@ -48,12 +49,12 @@ const triggerInvite = async (userId, liveUrl, usernames, retries = 3) => {
     if (retries > 0) {
       console.log(`Retrying... ${retries} left`);
       await new Promise(resolve => setTimeout(resolve, 2000)); // Exponential backoff
-      return triggerInvite(userId, liveUrl, usernames, retries - 1);
+      return triggerInvite(userId, liveUrl, invitees, retries - 1);
     }
 
     // Log failure to DB
-    db.run('INSERT INTO invites (userId, liveUrl, usernames, status) VALUES (?, ?, ?, ?)',
-      [userId, liveUrl, JSON.stringify(usernames), 'failed']);
+    db.run('INSERT INTO invites (userId, liveUrl, invitees, status) VALUES (?, ?, ?, ?)',
+      [userId, liveUrl, JSON.stringify(invitees), 'failed']);
     throw new Error('Failed to post invite');
   }
 };
